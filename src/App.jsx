@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styled from "styled-components";
 import { Button } from "./styles/Button.styled";
 import { TimerButton } from "./styles/TimerButton.styled";
@@ -62,14 +63,35 @@ const Container = styled.div`
 `;
 
 function App() {
+  const [focusValue, setFocusValue] = useState(25);
+  const breakValue = 5;
+
   return (
     <Container>
       <p className="subtitle">- GET THE WORK DONE -</p>
       <h1 className="title">POMODORO FOCUS</h1>
       <div className="timer-wrapper">
-        <p className="timer">25:00</p>
-        <TimerButton className="subtract-minutes">-</TimerButton>
-        <TimerButton className="subtract-add-minutes">+</TimerButton>
+        <p className="timer">{focusValue}:00</p>
+        <TimerButton
+          className="subtract-minutes"
+          onClick={() => {
+            if (focusValue > 5) {
+              setFocusValue(focusValue - breakValue);
+            }
+          }}
+        >
+          -
+        </TimerButton>
+        <TimerButton
+          className="subtract-add-minutes"
+          onClick={() => {
+            if (focusValue < 60) {
+              setFocusValue(focusValue + breakValue);
+            }
+          }}
+        >
+          +
+        </TimerButton>
       </div>
       <div className="button-wrapper">
         <Button className="start">START FOCUS</Button>
