@@ -63,20 +63,38 @@ const Container = styled.div`
 `;
 
 function App() {
-  const [focusValue, setFocusValue] = useState(25);
+  const [focusMinutesValue, setfocusMinutesValue] = useState(25);
+  const [focusSecondsValue, setfocusSecondsValue] = useState("00");
   const breakValue = 5;
+  const changeTimerValue = 5;
+
+  const startTimerCountdown = () => {
+    let time = focusMinutesValue * 60;
+    setInterval(updateCountdown, 1000);
+
+    function updateCountdown() {
+      const minutes = Math.floor(time / 60);
+      let seconds = time % 60;
+      seconds = seconds < 10 ? "0" + seconds : seconds;
+      setfocusMinutesValue(minutes);
+      setfocusSecondsValue(seconds);
+      time--;
+    }
+  };
 
   return (
     <Container>
       <p className="subtitle">- GET THE WORK DONE -</p>
       <h1 className="title">POMODORO FOCUS</h1>
       <div className="timer-wrapper">
-        <p className="timer">{focusValue}:00</p>
+        <p className="timer">
+          {focusMinutesValue}:{focusSecondsValue}
+        </p>
         <TimerButton
           className="subtract-minutes"
           onClick={() => {
-            if (focusValue > 5) {
-              setFocusValue(focusValue - breakValue);
+            if (focusMinutesValue > 5) {
+              setfocusMinutesValue(focusMinutesValue - changeTimerValue);
             }
           }}
         >
@@ -85,8 +103,8 @@ function App() {
         <TimerButton
           className="subtract-add-minutes"
           onClick={() => {
-            if (focusValue < 60) {
-              setFocusValue(focusValue + breakValue);
+            if (focusMinutesValue < 60) {
+              setfocusMinutesValue(focusMinutesValue + changeTimerValue);
             }
           }}
         >
@@ -94,7 +112,9 @@ function App() {
         </TimerButton>
       </div>
       <div className="button-wrapper">
-        <Button className="start">START FOCUS</Button>
+        <Button className="start" onClick={startTimerCountdown}>
+          START FOCUS
+        </Button>
         <Button className="break">TAKE A BREAK</Button>
       </div>
       <div className="logs-wrapper">
