@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const Button = styled.button`
+export const ActionButton = styled.button`
   background-color: transparent;
   font-family: Raleway, sans-serif;
   font-size: 16px;

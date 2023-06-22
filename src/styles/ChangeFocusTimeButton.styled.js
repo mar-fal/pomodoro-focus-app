@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const TimerButton = styled.button`
+export const ChangeFocusTimeButton = styled.button`
   background-color: transparent;
   font-size: 30px;
   font-family: Raleway, sans-serif;

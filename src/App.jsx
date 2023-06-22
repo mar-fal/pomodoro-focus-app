@@ -1,121 +1,223 @@
-import { useState } from "react";
-import styled from "styled-components";
-import { Button } from "./styles/Button.styled";
-import { TimerButton } from "./styles/TimerButton.styled";
+import { useState, useEffect, useRef } from "react";
+import { Container } from "./styles/Container.styled";
+import { ActionButton } from "./styles/ActionButton.styled";
+import { ChangeFocusTimeButton } from "./styles/ChangeFocusTimeButton.styled";
 import { LogsButton } from "./styles/LogsButton.styled";
 
-const Container = styled.div`
-  width: 390px;
-  height: 100vh;
-  margin: 0 auto;
-  padding-top: 70px;
-  padding-bottom: 30px;
-  background: #000300;
-  text-align: center;
-  font-family: Raleway, sans-serif;
-  color: #fef2e7;
-  p,
-  h1 {
-    margin: 0;
-  }
-  .title {
-    font-size: 22px;
-    font-weight: 500;
-    letter-spacing: 1px;
-  }
-  .subtitle {
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 2px;
-  }
-  .timer-wrapper {
-    margin: 40px 0;
-    padding: 160px 0;
-    background-image: url(src/images/Rings.png);
-    background-position: center;
-    background-size: cover;
-    .timer {
-      font-family: Helvetica;
-      font-size: 60px;
-      font-weight: 300;
-      line-height: 60px;
-      letter-spacing: 0.1em;
-      margin-bottom: 30px;
-    }
-  }
-  .button-wrapper {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 45px;
-  }
-  .logs-wrapper {
-    &:before {
-      content: "";
-      display: block;
-      margin: 0 auto;
-      width: 40px;
-      height: 0.5px;
-      background-color: #fef2e7;
-    }
-  }
-`;
-
 function App() {
-  const [focusMinutesValue, setfocusMinutesValue] = useState(25);
-  const [focusSecondsValue, setfocusSecondsValue] = useState("00");
-  const breakValue = 5;
+  const focusMinutesValue = 25;
+  const focusSecondsValue = "00";
+  const breakMinutesValue = 5;
+  const breakSecondsValue = "00";
   const changeTimerValue = 5;
+  const [currentMinutes, setCurrentMinutes] = useState(focusMinutesValue);
+  const [currentSeconds, setCurrentSeconds] = useState(focusSecondsValue);
+  const time = useRef(currentMinutes * 60 + parseInt(currentSeconds));
+  const [startScreen, setStartScreen] = useState(true);
+  const [breakMode, setBreakMode] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isCanceled, setIsCanceled] = useState(false);
+  const [isDone, setIsDone] = useState(false);
 
-  const startTimerCountdown = () => {
-    let time = focusMinutesValue * 60;
-    setInterval(updateCountdown, 1000);
+  useEffect(() => {
+    let interval = null;
+    if (!isPaused && isStarted) {
+      interval = setInterval(updateCountdown, 1000);
+    }
+
+    if (isCanceled) {
+      clearInterval(interval);
+      makeTimerReadyToStart();
+    }
 
     function updateCountdown() {
-      const minutes = Math.floor(time / 60);
-      let seconds = time % 60;
+      const minutes = Math.floor(time.current / 60);
+      let seconds = time.current % 60;
       seconds = seconds < 10 ? "0" + seconds : seconds;
-      setfocusMinutesValue(minutes);
-      setfocusSecondsValue(seconds);
-      time--;
+      setCurrentMinutes(minutes);
+      setCurrentSeconds(seconds);
+      time.current--;
+
+      if (time.current < 0) {
+        clearInterval(interval);
+        setIsDone(true);
+      }
     }
-  };
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isStarted, isPaused, breakMode, isCanceled]);
+
+  function makeTimerReadyToStart() {
+    setIsStarted(false);
+    setIsPaused(false);
+    if (breakMode) {
+      setCurrentMinutes(breakMinutesValue);
+      setCurrentSeconds(breakSecondsValue);
+    } else {
+      setCurrentMinutes(focusMinutesValue);
+      setCurrentSeconds(focusSecondsValue);
+    }
+  }
+
+  function updateTitle() {
+    if (startScreen) {
+      return "POMODORO FOCUS";
+    } else if (breakMode) {
+      return "BREAK";
+    } else {
+      return "FOCUS";
+    }
+  }
 
   return (
     <Container>
-      <p className="subtitle">- GET THE WORK DONE -</p>
-      <h1 className="title">POMODORO FOCUS</h1>
+      <p className="subtitle">
+        -{breakMode ? "RECHARGING" : "GET THE WORK DONE"}-
+      </p>
+      <h1 className="title">{updateTitle()}</h1>
       <div className="timer-wrapper">
         <p className="timer">
-          {focusMinutesValue}:{focusSecondsValue}
+          {currentMinutes}:{currentSeconds}
         </p>
-        <TimerButton
-          className="subtract-minutes"
+        {/* Button to subtract minutes */}
+        <ChangeFocusTimeButton
           onClick={() => {
-            if (focusMinutesValue > 5) {
-              setfocusMinutesValue(focusMinutesValue - changeTimerValue);
+            if (currentMinutes > 5) {
+              setCurrentMinutes(currentMinutes - changeTimerValue);
             }
           }}
         >
           -
-        </TimerButton>
-        <TimerButton
-          className="subtract-add-minutes"
+        </ChangeFocusTimeButton>
+        {/* Button to add minutes */}
+        <ChangeFocusTimeButton
           onClick={() => {
-            if (focusMinutesValue < 60) {
-              setfocusMinutesValue(focusMinutesValue + changeTimerValue);
+            if (currentMinutes < 60) {
+              setCurrentMinutes(currentMinutes + changeTimerValue);
             }
           }}
         >
           +
-        </TimerButton>
+        </ChangeFocusTimeButton>
       </div>
       <div className="button-wrapper">
-        <Button className="start" onClick={startTimerCountdown}>
-          START FOCUS
-        </Button>
-        <Button className="break">TAKE A BREAK</Button>
+        {/* Button to start countdown focus mode */}
+        {!isStarted && !isPaused && !breakMode && (
+          <ActionButton
+            onClick={() => {
+              setIsStarted(true);
+              setIsPaused(false);
+              setIsCanceled(false);
+              setStartScreen(false);
+              time.current = currentMinutes * 60 + parseInt(currentSeconds);
+            }}
+          >
+            START FOCUS
+          </ActionButton>
+        )}
+        {/* Button to pause countdown */}
+        {isStarted && !isDone && (
+          <ActionButton
+            onClick={() => {
+              setIsPaused(true);
+              setIsStarted(false);
+              time.current = currentMinutes * 60 + parseInt(currentSeconds);
+            }}
+          >
+            PAUSE
+          </ActionButton>
+        )}
+        {/* Button to continue countdown */}
+        {isPaused && !isDone && (
+          <ActionButton
+            onClick={() => {
+              setIsPaused(false);
+              setIsStarted(true);
+              time.current = currentMinutes * 60 + parseInt(currentSeconds);
+            }}
+          >
+            RESUME
+          </ActionButton>
+        )}
+        {/* Button to cancel timer */}
+        {(isStarted || isPaused) && !isDone && (
+          <ActionButton onClick={() => setIsCanceled(true)}>
+            CANCEL
+          </ActionButton>
+        )}
+        {/* Button to go to break mode */}
+        {!isStarted && !isPaused && !breakMode && (
+          <ActionButton
+            onClick={() => {
+              setBreakMode(true);
+              setStartScreen(false);
+              setCurrentMinutes(breakMinutesValue);
+              setCurrentSeconds(breakSecondsValue);
+            }}
+          >
+            TAKE A BREAK
+          </ActionButton>
+        )}
+        {/* Button to start countdown break mode */}
+        {breakMode && !isStarted && !isPaused && (
+          <ActionButton
+            onClick={() => {
+              setIsStarted(true);
+              setIsPaused(false);
+              setIsCanceled(false);
+              time.current = currentMinutes * 60 + parseInt(currentSeconds);
+            }}
+          >
+            START BREAK
+          </ActionButton>
+        )}
+        {/* Button to go to focus mode */}
+        {breakMode && !isStarted && !isPaused && (
+          <ActionButton
+            onClick={() => {
+              setCurrentMinutes(focusMinutesValue);
+              setBreakMode(false);
+              setStartScreen(true);
+            }}
+          >
+            FOCUS
+          </ActionButton>
+        )}
+        {/* Button to start focus or break countdown immediately after the break or focus cycle is ended*/}
+        {isDone && (
+          <ActionButton
+            onClick={() => {
+              if (breakMode) {
+                setCurrentMinutes(breakMinutesValue);
+                setCurrentSeconds(breakSecondsValue);
+              } else {
+                setCurrentMinutes(focusMinutesValue);
+                setCurrentSeconds(focusSecondsValue);
+              }
+              setIsStarted(true);
+              setIsPaused(false);
+              setIsDone(false);
+              time.current = currentMinutes * 60 + parseInt(currentSeconds);
+            }}
+          >
+            {!breakMode
+              ? `FOCUS NOW ${focusMinutesValue}:${focusSecondsValue}`
+              : `BREAK ${breakMinutesValue}:${breakSecondsValue}`}
+          </ActionButton>
+        )}
+        {/* Button to go to start screen */}
+        {isDone && (
+          <ActionButton
+            onClick={() => {
+              setIsDone(false);
+              makeTimerReadyToStart();
+            }}
+          >
+            DONE
+          </ActionButton>
+        )}
       </div>
       <div className="logs-wrapper">
         <LogsButton className="logs-button">Show logs</LogsButton>
