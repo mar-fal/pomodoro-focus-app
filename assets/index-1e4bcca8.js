@@ -74,7 +74,7 @@ Error generating stack: `+o.message+`
   .timer-wrapper {
     margin: 40px 0;
     padding: 160px 0;
-    background-image: url(public/images/Rings.png);
+    background-image: url(rings.png);
     background-position: center;
     background-size: cover;
     .timer {
