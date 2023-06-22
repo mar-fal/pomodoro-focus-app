@@ -190,11 +190,11 @@ function App() {
           <ActionButton
             onClick={() => {
               if (breakMode) {
-                setCurrentMinutes(breakMinutesValue);
-                setCurrentSeconds(breakSecondsValue);
-              } else {
                 setCurrentMinutes(focusMinutesValue);
                 setCurrentSeconds(focusSecondsValue);
+              } else {
+                setCurrentMinutes(breakMinutesValue);
+                setCurrentSeconds(breakSecondsValue);
               }
               setIsStarted(true);
               setIsPaused(false);
@@ -202,7 +202,7 @@ function App() {
               time.current = currentMinutes * 60 + parseInt(currentSeconds);
             }}
           >
-            {!breakMode
+            {breakMode
               ? `FOCUS NOW ${focusMinutesValue}:${focusSecondsValue}`
               : `BREAK ${breakMinutesValue}:${breakSecondsValue}`}
           </ActionButton>
@@ -212,6 +212,7 @@ function App() {
           <ActionButton
             onClick={() => {
               setIsDone(false);
+              setStartScreen(true);
               makeTimerReadyToStart();
             }}
           >

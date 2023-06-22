@@ -27,7 +27,7 @@ export const Container = styled.div`
   .timer-wrapper {
     margin: 40px 0;
     padding: 160px 0;
-    background-image: url(src/images/Rings.png);
+    background-image: url(rings.png);
     background-position: center;
     background-size: cover;
     .timer {
